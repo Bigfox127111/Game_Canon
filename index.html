@@ -1,0 +1,155 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+  <title>Cannon Game</title>  
+  <style>  
+   /* Add some basic styling to our game */  
+   canvas {  
+    border: 1px solid black;  
+   }  
+  </style>  
+</head>  
+<body>  
+  <canvas id="gameCanvas" width="800" height="600"></canvas>  
+  <script>  
+   // Get the canvas element  
+   var canvas = document.getElementById('gameCanvas');  
+   var ctx = canvas.getContext('2d');  
+  
+   // Set the canvas dimensions  
+   canvas.width = 800;  
+   canvas.height = 600;  
+  
+   // Define some game constants  
+   var GRAVITY = 0.1;  
+   var CANNON_SIZE = 50;  
+   var BALL_SIZE = 10;  
+   var SQUARE_SIZE = 50;  
+   var SQUARE_SPEED = 2;  
+  
+   // Define the cannon object  
+   var cannon = {  
+    x: canvas.width / 2,  
+    y: canvas.height - CANNON_SIZE,  
+    angle: 0  
+   };  
+  
+   // Define the ball object  
+   var ball = {  
+    x: cannon.x,  
+    y: cannon.y,  
+    vx: 0,  
+    vy: 0,  
+    radius: BALL_SIZE  
+   };  
+  
+   // Define the square objects  
+   var squares = [];  
+   for (var i = 0; i < 10; i++) {  
+    squares.push({  
+      x: Math.random() * (canvas.width - SQUARE_SIZE),  
+      y: Math.random() * (canvas.height - SQUARE_SIZE),  
+      vx: Math.random() * SQUARE_SPEED,  
+      vy: Math.random() * SQUARE_SPEED  
+    });  
+   }  
+  
+   // Main game loop  
+   function update() {  
+    // Update the cannon angle  
+    cannon.angle = Math.atan2(mouseY - cannon.y, mouseX - cannon.x);  
+  
+    // Update the ball position  
+    ball.x += ball.vx;  
+    ball.y += ball.vy;  
+    ball.vy += GRAVITY;  
+  
+    // Check for collisions with the squares  
+    for (var i = 0; i < squares.length; i++) {  
+      var square = squares[i];  
+      if (checkCollision(ball, square)) {  
+       // Remove the square and reset the ball  
+       squares.splice(i, 1);  
+       ball.x = cannon.x;  
+       ball.y = cannon.y;  
+       ball.vx = 0;  
+       ball.vy = 0;  
+      }  
+    }  
+  
+    // Update the square positions  
+    for (var i = 0; i < squares.length; i++) {  
+      var square = squares[i];  
+      square.x += square.vx;  
+      square.y += square.vy;  
+  
+      // Check for collision with the cannon  
+      if (checkCollision(square, cannon)) {  
+       // Game over!  
+       alert('Game Over!');  
+       return;  
+      }  
+    }  
+  
+    // Draw everything  
+    ctx.clearRect(0, 0, canvas.width, canvas.height);  
+    drawCannon(cannon);  
+    drawBall(ball);  
+    for (var i = 0; i < squares.length; i++) {  
+      drawSquare(squares[i]);  
+    }  
+  
+    // Request the next frame  
+    requestAnimationFrame(update);  
+   }  
+  
+   // Draw the cannon  
+   function drawCannon(cannon) {  
+    ctx.save();  
+    ctx.translate(cannon.x, cannon.y);  
+    ctx.rotate(cannon.angle);  
+    ctx.fillStyle = 'black';  
+    ctx.fillRect(-CANNON_SIZE / 2, -CANNON_SIZE / 2, CANNON_SIZE, CANNON_SIZE);  
+    ctx.restore();  
+   }  
+  
+   // Draw the ball  
+   function drawBall(ball) {  
+    ctx.fillStyle = 'red';  
+    ctx.beginPath();  
+    ctx.arc(ball.x, ball.y, ball.radius, 0, 2 * Math.PI);  
+    ctx.fill();  
+   }  
+  
+   // Draw a square  
+   function drawSquare(square) {  
+    ctx.fillStyle = 'blue';  
+    ctx.fillRect(square.x, square.y, SQUARE_SIZE, SQUARE_SIZE);  
+   }  
+  
+   // Check for collision between two objects  
+   function checkCollision(obj1, obj2) {  
+    var dx = obj1.x - obj2.x;  
+    var dy = obj1.y - obj2.y;  
+    var distance = Math.sqrt(dx * dx + dy * dy);  
+    return distance < obj1.radius + obj2.radius;  
+   }  
+  
+   // Handle mouse events  
+   var mouseX, mouseY;  
+   canvas.addEventListener('mousemove', function(event) {  
+    mouseX = event.clientX;  
+    mouseY = event.clientY;  
+   });  
+  
+   canvas.addEventListener('click', function(event) {  
+    // Shoot the ball!  
+    ball.vx = Math.cos(cannon.angle) * 10;  
+    ball.vy = Math.sin(cannon.angle) * 10;  
+   });  
+  
+   // Start the game loop  
+   update();  
+  </script>  
+</body>  
+</html>
