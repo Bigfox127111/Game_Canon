@@ -40,7 +40,8 @@
     y: cannon.y,  
     vx: 0,  
     vy: 0,  
-    radius: BALL_SIZE  
+    radius: BALL_SIZE,  
+    fired: false  
    };  
   
    // Define the square objects  
@@ -60,16 +61,28 @@
     cannon.angle = Math.atan2(mouseY - cannon.y, mouseX - cannon.x);  
   
     // Update the ball position  
-    ball.x += ball.vx;  
-    ball.y += ball.vy;  
-    ball.vy += GRAVITY;  
+    if (ball.fired) {  
+      ball.x += ball.vx;  
+      ball.y += ball.vy;  
+      ball.vy += GRAVITY;  
   
-    // Check for collisions with the squares  
-    for (var i = 0; i < squares.length; i++) {  
-      var square = squares[i];  
-      if (checkCollision(ball, square)) {  
-       // Remove the square and reset the ball  
-       squares.splice(i, 1);  
+      // Check for collisions with the squares  
+      for (var i = 0; i < squares.length; i++) {  
+       var square = squares[i];  
+       if (checkCollision(ball, square)) {  
+        // Remove the square and reset the ball  
+        squares.splice(i, 1);  
+        ball.fired = false;  
+        ball.x = cannon.x;  
+        ball.y = cannon.y;  
+        ball.vx = 0;  
+        ball.vy = 0;  
+       }  
+      }  
+  
+      // Check if the ball has gone off the screen  
+      if (ball.x < 0 || ball.x > canvas.width || ball.y < 0 || ball.y > canvas.height) {  
+       ball.fired = false;  
        ball.x = cannon.x;  
        ball.y = cannon.y;  
        ball.vx = 0;  
@@ -94,7 +107,9 @@
     // Draw everything  
     ctx.clearRect(0, 0, canvas.width, canvas.height);  
     drawCannon(cannon);  
-    drawBall(ball);  
+    if (ball.fired) {  
+      drawBall(ball);  
+    }  
     for (var i = 0; i < squares.length; i++) {  
       drawSquare(squares[i]);  
     }  
@@ -144,6 +159,7 @@
   
    canvas.addEventListener('click', function(event) {  
     // Shoot the ball!  
+    ball.fired = true;  
     ball.vx = Math.cos(cannon.angle) * 10;  
     ball.vy = Math.sin(cannon.angle) * 10;  
    });  
